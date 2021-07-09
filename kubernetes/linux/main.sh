@@ -321,6 +321,21 @@ if [ -e "telemetry_prom_config_env_var" ]; then
       source telemetry_prom_config_env_var
 fi
 
+#Parse sidecar agent settings for custom configuration
+if [ ! -e "/etc/config/kube.conf" ]; then
+      if [ "${CONTAINER_TYPE}" == "PrometheusSidecar" ]; then
+            #Parse the agent configmap to create a file with new custom settings.
+            /usr/bin/ruby2.6 tomlparser-prom-agent-config.rb
+            #Sourcing config environment variable file if it exists
+            if [ -e "side_car_fbit_config_env_var" ]; then
+                  cat side_car_fbit_config_env_var | while read line; do
+                        echo $line >> ~/.bashrc
+                  done
+                  source side_car_fbit_config_env_var
+            fi
+      fi
+fi
+
 
 #Parse the configmap to set the right environment variables for MDM metrics configuration for Alerting.
 if [ "${CONTAINER_TYPE}" != "PrometheusSidecar" ]; then
@@ -561,17 +576,19 @@ fi
 if [ ! -e "/etc/config/kube.conf" ]; then
       if [ "${CONTAINER_TYPE}" == "PrometheusSidecar" ] && [ -e "/opt/telegraf-test-prom-side-car.conf" ]; then
             echo "****************Start Telegraf in Test Mode**************************"
-            /opt/telegraf --config /opt/telegraf-test-prom-side-car.conf -test
+            /opt/telegraf --config /opt/telegraf-test-prom-side-car.conf --input-filter file -test
             if [ $? -eq 0 ]; then
                   mv "/opt/telegraf-test-prom-side-car.conf" "/etc/opt/microsoft/docker-cimprov/telegraf-prom-side-car.conf"
+                  echo "Moving test conf file to telegraf side-car conf since test run succeeded"
             fi
             echo "****************End Telegraf Run in Test Mode**************************"
       else
             if [ -e "/opt/telegraf-test.conf" ]; then
                   echo "****************Start Telegraf in Test Mode**************************"
-                  /opt/telegraf --config /opt/telegraf-test.conf -test
+                  /opt/telegraf --config /opt/telegraf-test.conf --input-filter file -test
                   if [ $? -eq 0 ]; then
                         mv "/opt/telegraf-test.conf" "/etc/opt/microsoft/docker-cimprov/telegraf.conf"
+                        echo "Moving test conf file to telegraf daemonset conf since test run succeeded"
                   fi
                   echo "****************End Telegraf Run in Test Mode**************************"
             fi
@@ -579,9 +596,10 @@ if [ ! -e "/etc/config/kube.conf" ]; then
 else
       if [ -e "/opt/telegraf-test-rs.conf" ]; then
                   echo "****************Start Telegraf in Test Mode**************************"
-                  /opt/telegraf --config /opt/telegraf-test-rs.conf -test
+                  /opt/telegraf --config /opt/telegraf-test-rs.conf --input-filter file -test
                   if [ $? -eq 0 ]; then
                         mv "/opt/telegraf-test-rs.conf" "/etc/opt/microsoft/docker-cimprov/telegraf-rs.conf"
+                        echo "Moving test conf file to telegraf replicaset conf since test run succeeded"
                   fi
                   echo "****************End Telegraf Run in Test Mode**************************"
       fi
