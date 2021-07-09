@@ -113,6 +113,7 @@ if [[ ( ( ! -e "/etc/config/kube.conf" ) && ( "${CONTAINER_TYPE}" == "Prometheus
 fi
 
 export PROXY_ENDPOINT=""
+# TODO: here
 # Check for internet connectivity or workspace deletion
 if [ -e "/etc/omsagent-secret/WSID" ]; then
       workspaceId=$(cat /etc/omsagent-secret/WSID)
@@ -150,6 +151,16 @@ if [ -e "/etc/omsagent-secret/WSID" ]; then
             else
                echo "successfully validated provided proxy endpoint is valid and expected format"
             fi
+
+            # Write environment variables so mdsd can use the proxy. Do this regardless of if using mdsd or not because nothing will break because these environment variables are written
+            echo $pwd > /opt/proxy_password
+
+            echo "export MDSD_PROXY_MODE=application" >> ~/.bashrc
+            echo "export MDSD_PROXY_ADDRESS=$hostport" >> ~/.bashrc
+            echo "export MDSD_PROXY_USERNAME=$user" >> ~/.bashrc
+            echo "export MDSD_PROXY_PASSWORD_FILE=/opt/proxy_password" >> ~/.bashrc
+
+            source ~/.bashrcaz account set --subscription 3b875bf3-0eec-4d8c-bdee-25c7ccc1f130
       fi
 
       if [ ! -z "$PROXY_ENDPOINT" ]; then
