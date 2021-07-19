@@ -160,7 +160,11 @@ if [ -e "/etc/omsagent-secret/WSID" ]; then
             echo "export MDSD_PROXY_USERNAME=$user" >> ~/.bashrc
             echo "export MDSD_PROXY_PASSWORD_FILE=/opt/proxy_password" >> ~/.bashrc
 
-            source ~/.bashrcaz account set --subscription 3b875bf3-0eec-4d8c-bdee-25c7ccc1f130
+            # TODO: set proxy in go. It's possible that setting $PROXY_ENDPOINT is good enough, but double check
+            # go and ruby should automatically use this env variable
+            echo "export http_proxy=$PROXY_ENDPOINT" >> ~/.bashrc
+
+            source ~/.bashrc
       fi
 
       if [ ! -z "$PROXY_ENDPOINT" ]; then
