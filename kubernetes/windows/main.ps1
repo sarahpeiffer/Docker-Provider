@@ -81,10 +81,6 @@ function Set-EnvironmentVariables {
     # Set DOMAIN
     [System.Environment]::SetEnvironmentVariable("DOMAIN", $domain, "Process")
     [System.Environment]::SetEnvironmentVariable("DOMAIN", $domain, "Machine")
-    
-    # Set MCS Endpoint
-    [System.Environment]::SetEnvironmentVariable("MCS_ENDPOINT", $mcs_endpoint, "Process")
-    [System.Environment]::SetEnvironmentVariable("MCS_ENDPOINT", $mcs_endpoint, "Machine")
 
     # Set MCS Endpoint
     [System.Environment]::SetEnvironmentVariable("MCS_ENDPOINT", $mcs_endpoint, "Process")
@@ -92,7 +88,7 @@ function Set-EnvironmentVariables {
 
     # Set CLOUD_ENVIRONMENT
     [System.Environment]::SetEnvironmentVariable("CLOUD_ENVIRONMENT", $cloud_environment, "Process")
-    [System.Environment]::SetEnvironmentVariable("CLOUD_ENVIRONMENT", $cloud_environment, "Machine")      
+    [System.Environment]::SetEnvironmentVariable("CLOUD_ENVIRONMENT", $cloud_environment, "Machine")
 
     $wsID = ""
     if (Test-Path /etc/omsagent-secret/WSID) {
@@ -263,16 +259,6 @@ function Set-EnvironmentVariables {
     }
     else {
         Write-Host "Failed to set environment variable HOSTNAME for target 'machine' since it is either null or empty"
-    }
-    # check if its AAD Auth MSI mode via USING_AAD_MSI_AUTH environment variable
-    $isAADMSIAuth = [System.Environment]::GetEnvironmentVariable("USING_AAD_MSI_AUTH", "process")
-    if (![string]::IsNullOrEmpty($isAADMSIAuth) -and ($isAADMSIAuth -eq "true")) {
-        [System.Environment]::SetEnvironmentVariable("AAD_MSI_AUTH_MODE", "true", "Process")
-        [System.Environment]::SetEnvironmentVariable("AAD_MSI_AUTH_MODE", "true", "Machine")
-        Write-Host "Using AAD MSI auth"
-    }
-    else {
-        Write-Host "Using LA Legacy Auth"
     }
 
     # check if its AAD Auth MSI mode via USING_AAD_MSI_AUTH environment variable
