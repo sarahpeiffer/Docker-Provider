@@ -9,8 +9,8 @@ sed -i -e 's/# en_US.UTF-8 UTF-8/en_US.UTF-8 UTF-8/' /etc/locale.gen && \
     dpkg-reconfigure --frontend=noninteractive locales && \
     update-locale LANG=en_US.UTF-8
 
-#install oneagent - Official bits (05/17/2021)
-# wget https://github.com/microsoft/Docker-Provider/raw/gangams/ci-aad-auth-msi/oneagent-dev/azure-mdsd_1.10.1-build.dev_x86_64.deb
+#install oneagent - Official bits (06/24/2021)
+# wget https://github.com/microsoft/Docker-Provider/releases/download/06242021-oneagent/azure-mdsd_1.10.3-build.master.241_x86_64.deb
 wget https://github.com/microsoft/Docker-Provider/releases/download/0.1/azure-mdsd_1.11.0-build.develop.2091_x86_64.deb  # has proxy support
 
 /usr/bin/dpkg -i $TMPDIR/azure-mdsd*.deb
