@@ -9,12 +9,13 @@ class MdmMetricsGenerator
   require_relative "ApplicationInsightsUtility"
   require_relative "constants"
   require_relative "oms_common"
+  require_relative "test_registry"
 
-  @os_type = ENV["OS_TYPE"]
+  @os_type = Test_registry.instance.env["OS_TYPE"]
   if !@os_type.nil? && !@os_type.empty? && @os_type.strip.casecmp("windows") == 0
-    @log_path = "/etc/omsagentwindows/mdm_metrics_generator.log"
+    @log_path = Constants::WINDOWS_LOG_PATH + "mdm_metrics_generator.log"
   else
-    @log_path = "/var/opt/microsoft/docker-cimprov/log/mdm_metrics_generator.log"
+    @log_path = Constants::LINUX_LOG_PATH + "mdm_metrics_generator.log"
   end
   @log = Logger.new(@log_path, 1, 5000000)
   @@hostName = (OMS::Common.get_hostname)
@@ -495,32 +496,32 @@ class MdmMetricsGenerator
         metric_threshold_hash[Constants::PV_USED_BYTES] = Constants::DEFAULT_MDM_PV_UTILIZATION_THRESHOLD
         metric_threshold_hash[Constants::JOB_COMPLETION_TIME] = Constants::DEFAULT_MDM_JOB_COMPLETED_TIME_THRESHOLD_MINUTES
 
-        cpuThreshold = ENV["AZMON_ALERT_CONTAINER_CPU_THRESHOLD"]
+        cpuThreshold = Test_registry.instance.env["AZMON_ALERT_CONTAINER_CPU_THRESHOLD"]
         if !cpuThreshold.nil? && !cpuThreshold.empty?
           #Rounding this to 2 decimal places, since this value is user configurable
           cpuThresholdFloat = (cpuThreshold.to_f).round(2)
           metric_threshold_hash[Constants::CPU_USAGE_NANO_CORES] = cpuThresholdFloat
         end
 
-        memoryRssThreshold = ENV["AZMON_ALERT_CONTAINER_MEMORY_RSS_THRESHOLD"]
+        memoryRssThreshold = Test_registry.instance.env["AZMON_ALERT_CONTAINER_MEMORY_RSS_THRESHOLD"]
         if !memoryRssThreshold.nil? && !memoryRssThreshold.empty?
           memoryRssThresholdFloat = (memoryRssThreshold.to_f).round(2)
           metric_threshold_hash[Constants::MEMORY_RSS_BYTES] = memoryRssThresholdFloat
         end
 
-        memoryWorkingSetThreshold = ENV["AZMON_ALERT_CONTAINER_MEMORY_WORKING_SET_THRESHOLD"]
+        memoryWorkingSetThreshold = Test_registry.instance.env["AZMON_ALERT_CONTAINER_MEMORY_WORKING_SET_THRESHOLD"]
         if !memoryWorkingSetThreshold.nil? && !memoryWorkingSetThreshold.empty?
           memoryWorkingSetThresholdFloat = (memoryWorkingSetThreshold.to_f).round(2)
           metric_threshold_hash[Constants::MEMORY_WORKING_SET_BYTES] = memoryWorkingSetThresholdFloat
         end
 
-        pvUsagePercentageThreshold = ENV["AZMON_ALERT_PV_USAGE_THRESHOLD"]
+        pvUsagePercentageThreshold = Test_registry.instance.env["AZMON_ALERT_PV_USAGE_THRESHOLD"]
         if !pvUsagePercentageThreshold.nil? && !pvUsagePercentageThreshold.empty?
           pvUsagePercentageThresholdFloat = (pvUsagePercentageThreshold.to_f).round(2)
           metric_threshold_hash[Constants::PV_USED_BYTES] = pvUsagePercentageThresholdFloat
         end
 
-        jobCompletionTimeThreshold = ENV["AZMON_ALERT_JOB_COMPLETION_TIME_THRESHOLD"]
+        jobCompletionTimeThreshold = Test_registry.instance.env["AZMON_ALERT_JOB_COMPLETION_TIME_THRESHOLD"]
         if !jobCompletionTimeThreshold.nil? && !jobCompletionTimeThreshold.empty?
           jobCompletionTimeThresholdInt = jobCompletionTimeThreshold.to_i
           metric_threshold_hash[Constants::JOB_COMPLETION_TIME] = jobCompletionTimeThresholdInt
