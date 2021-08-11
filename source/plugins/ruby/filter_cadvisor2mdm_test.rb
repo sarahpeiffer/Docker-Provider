@@ -21,6 +21,23 @@ class MyInputTest < Test::Unit::TestCase
       Fluent::Test::Driver::Filter.new(Fluent::Plugin::CAdvisor2MdmFilter).configure(conf)
     end
   
+    # A relatively simple test for a helper method
+    test "build_metrics_hash" do
+
+      instance = create_driver.instance
+
+      expected = {"constants::cpu_usage_nano_cores" => true, "constants::memory_working_set_bytes" => true, "constants::memory_rss_bytes"=> true, "constants::pv_used_bytes"=> true}
+      actual = instance.build_metrics_hash "Constants::CPU_USAGE_NANO_CORES,Constants::MEMORY_WORKING_SET_BYTES,Constants::MEMORY_RSS_BYTES,Constants::PV_USED_BYTES"
+      assert_equal(expected, actual)
+
+      assert_equal({}, instance.build_metrics_hash(""))
+
+      assert_equal({"foobar" => true}, instance.build_metrics_hash("foobar"))
+
+    end
+
+
+    # a much more complicated test for the filter method of filter_cadvisor2mdm (this is an allup test)
     test 'filter' do
 
       class Ai_utility_stub
@@ -92,24 +109,5 @@ class MyInputTest < Test::Unit::TestCase
 
       assert_equal(0, d.filtered_records.size)
     end
-
-
-
-    test "build_metrics_hash" do
-
-      instance = create_driver.instance
-
-      expected = {"constants::cpu_usage_nano_cores" => true, "constants::memory_working_set_bytes" => true, "constants::memory_rss_bytes"=> true, "constants::pv_used_bytes"=> true}
-      actual = instance.build_metrics_hash "Constants::CPU_USAGE_NANO_CORES,Constants::MEMORY_WORKING_SET_BYTES,Constants::MEMORY_RSS_BYTES,Constants::PV_USED_BYTES"
-      assert_equal(expected, actual)
-
-      assert_equal({}, instance.build_metrics_hash(""))
-
-      assert_equal({"foobar" => true}, instance.build_metrics_hash("foobar"))
-
-    end
-
-
-
 
 end
