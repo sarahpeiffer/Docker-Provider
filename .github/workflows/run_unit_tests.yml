@@ -1,5 +1,10 @@
 name: Run Unit Tests
-on: [opened, synchronize, reopened]
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches:
+      - ci_dev
+      - ci_prod
 jobs:
   Actions-Demo:
     runs-on: ubuntu-latest
