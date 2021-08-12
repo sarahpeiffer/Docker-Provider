@@ -9,9 +9,8 @@ class MdmMetricsGenerator
   require_relative "ApplicationInsightsUtility"
   require_relative "constants"
   require_relative "oms_common"
-  require_relative "test_registry"
 
-  @os_type = Test_registry.instance.env["OS_TYPE"]
+  @os_type = ENV["OS_TYPE"]
   if !@os_type.nil? && !@os_type.empty? && @os_type.strip.casecmp("windows") == 0
     @log_path = Constants::WINDOWS_LOG_PATH + "mdm_metrics_generator.log"
   else
@@ -486,7 +485,7 @@ class MdmMetricsGenerator
       true if Float(o) rescue false
     end
 
-    def getContainerResourceUtilizationThresholds
+    def getContainerResourceUtilizationThresholds(env=ENV)
       begin
         metric_threshold_hash = {}
         # Initilizing with default values

@@ -54,7 +54,7 @@ module Fluent::Plugin
       @KubernetesAPIClient = kubernetesApiClient
       @KubeletUtils = kubeletUtils
       byebug
-      super
+      super()
 
       @@isWindows = false
       @@os_type = @ENV["OS_TYPE"]
