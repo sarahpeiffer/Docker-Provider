@@ -1,5 +1,7 @@
 
-cd ../../source/plugins/go/src
+OLD_PATH=$(pwd)
+SCRIPTPATH="$( cd -- "$(dirname "$0")" >/dev/null 2>&1 ; pwd -P )"
+cd $SCRIPTPATH/../../source/plugins/go/src
 go test .
-cd -
 
+cd $OLD_PATH
