@@ -13,7 +13,6 @@ module Fluent::Plugin
   require_relative "MdmMetricsGenerator"
   require_relative "in_kube_nodes"
   require_relative "constants"
-  require_relative "test_registry"
   require 'byebug'
 
   class CAdvisor2MdmFilter < Filter
@@ -37,12 +36,6 @@ module Fluent::Plugin
 
     def initialize
       super
-
-      @@isWindows = false
-      @@os_type = Test_registry.instance.env["OS_TYPE"]
-      if !@@os_type.nil? && !@@os_type.empty? && @@os_type.strip.casecmp("windows") == 0
-        @@isWindows = true
-      end
     end
 
     def configure(conf)
@@ -55,11 +48,22 @@ module Fluent::Plugin
       end
     end
 
-    def start
+    def start(env=ENV, applicationInsightsUtility=ApplicationInsightsUtility, kubernetesApiClient=KubernetesApiClient, kubeletUtils=KubeletUtils)
+      @ENV = env
+      @AplicationInsightsUtility = applicationInsightsUtility
+      @KubernetesAPIClient = kubernetesApiClient
+      @KubeletUtils = kubeletUtils
       byebug
       super
+
+      @@isWindows = false
+      @@os_type = @ENV["OS_TYPE"]
+      if !@@os_type.nil? && !@@os_type.empty? && @@os_type.strip.casecmp("windows") == 0
+        @@isWindows = true
+      end
+
       begin
-        @process_incoming_stream = CustomMetricsUtils.check_custom_metrics_availability
+        @process_incoming_stream = CustomMetricsUtils.check_custom_metrics_availability(env=@ENV)
         @metrics_to_collect_hash = build_metrics_hash(@metrics_to_collect)
         @Log.debug "After check_custom_metrics_availability process_incoming_stream #{@process_incoming_stream}"
         @@containerResourceUtilTelemetryTimeTracker = DateTime.now.to_time.to_i
@@ -115,7 +119,7 @@ module Fluent::Plugin
         end
       rescue => errorStr
         @Log.info "Error in setThresholdExceededTelemetry: #{errorStr}"
-        Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(errorStr)
+        @ApplicationInsightsUtility.sendExceptionTelemetry(errorStr)
       end
     end
 
@@ -133,7 +137,7 @@ module Fluent::Plugin
           properties["CpuThresholdExceededInLastFlushInterval"] = @containersExceededCpuThreshold
           properties["MemRssThresholdExceededInLastFlushInterval"] = @containersExceededMemRssThreshold
           properties["MemWSetThresholdExceededInLastFlushInterval"] = @containersExceededMemWorkingSetThreshold
-          Test_registry.instance.applicationInsightsUtility.sendCustomEvent(Constants::CONTAINER_RESOURCE_UTIL_HEART_BEAT_EVENT, properties)
+          @ApplicationInsightsUtility.sendCustomEvent(Constants::CONTAINER_RESOURCE_UTIL_HEART_BEAT_EVENT, properties)
           @containersExceededCpuThreshold = false
           @containersExceededMemRssThreshold = false
           @containersExceededMemWorkingSetThreshold = false
@@ -141,7 +145,7 @@ module Fluent::Plugin
         end
       rescue => errorStr
         @Log.info "Error in flushMetricTelemetry: #{errorStr} for container resource util telemetry"
-        Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(errorStr)
+        @ApplicationInsightsUtility.sendExceptionTelemetry(errorStr)
       end
 
       # Also send for PV usage metrics
@@ -153,14 +157,14 @@ module Fluent::Plugin
             pvProperties = {}
             pvProperties["PVUsageThresholdPercentage"] = @@metric_threshold_hash[Constants::PV_USED_BYTES]
             pvProperties["PVUsageThresholdExceededInLastFlushInterval"] = @pvExceededUsageThreshold
-            Test_registry.instance.applicationInsightsUtility.sendCustomEvent(Constants::PV_USAGE_HEART_BEAT_EVENT, pvProperties)
+            @ApplicationInsightsUtility.sendCustomEvent(Constants::PV_USAGE_HEART_BEAT_EVENT, pvProperties)
             @pvExceededUsageThreshold = false
             @@pvUsageTelemetryTimeTracker = DateTime.now.to_time.to_i
           end
         end
       rescue => errorStr
         @Log.info "Error in flushMetricTelemetry: #{errorStr} for PV usage telemetry"
-        Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(errorStr)
+        @ApplicationInsightsUtility.sendExceptionTelemetry(errorStr)
       end
     end
 
@@ -232,14 +236,14 @@ module Fluent::Plugin
               telemetryProperties["Computer"] = record["Host"]
               telemetryProperties["MetricName"] = metric_name
               telemetryProperties["MetricPercentageValue"] = percentage_metric_value
-              Test_registry.instance.applicationInsightsUtility.sendCustomEvent("ErrorPercentageOutOfBounds", telemetryProperties)
+              @ApplicationInsightsUtility.sendCustomEvent("ErrorPercentageOutOfBounds", telemetryProperties)
             end
             if allocatable_percentage_metric_value > 100.0
               telemetryProperties = {}
               telemetryProperties["Computer"] = record["Host"]
               telemetryProperties["MetricName"] = metric_name
               telemetryProperties["MetricAllocatablePercentageValue"] = allocatable_percentage_metric_value
-              Test_registry.instance.applicationInsightsUtility.sendCustomEvent("ErrorPercentageOutOfBounds", telemetryProperties)
+              @ApplicationInsightsUtility.sendCustomEvent("ErrorPercentageOutOfBounds", telemetryProperties)
             end
 
             return MdmMetricsGenerator.getNodeResourceMetricRecords(record, metric_name, metric_value, percentage_metric_value, allocatable_percentage_metric_value)
@@ -295,7 +299,7 @@ module Fluent::Plugin
         end #end if block for process incoming stream check
       rescue Exception => e
         @Log.info "Error processing cadvisor record Exception: #{e.class} Message: #{e.message}"
-        Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
+        @ApplicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
         return [] #return empty array if we ran into any errors
       end
     end
@@ -333,13 +337,13 @@ module Fluent::Plugin
         return []
       rescue Exception => e
         @Log.info "Error processing cadvisor insights metrics record Exception: #{e.class} Message: #{e.message}"
-        Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
+        @ApplicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
         return [] #return empty array if we ran into any errors
       end
     end
 
     def ensure_cpu_memory_capacity_and_allocatable_set
-      @@controller_type = Test_registry.instance.env["CONTROLLER_TYPE"]
+      @@controller_type = @ENV["CONTROLLER_TYPE"]
 
       if @cpu_capacity != 0.0 && @memory_capacity != 0.0 && @@controller_type.downcase == "replicaset"
         @Log.info "CPU And Memory Capacity are already set and their values are as follows @cpu_capacity : #{@cpu_capacity}, @memory_capacity: #{@memory_capacity}"
@@ -357,14 +361,14 @@ module Fluent::Plugin
 
         begin
           byebug
-          resourceUri = Test_registry.instance.kubernetesApiClient.getNodesResourceUri("nodes?fieldSelector=metadata.name%3D#{@@hostName}")
-          nodeInventory = JSON.parse(Test_registry.instance.kubernetesApiClient.getKubeResourceInfo(resourceUri).body)  
+          resourceUri = @KubernetesAPIClient.getNodesResourceUri("nodes?fieldSelector=metadata.name%3D#{@@hostName}")
+          nodeInventory = JSON.parse(@KubernetesAPIClient.getKubeResourceInfo(resourceUri).body)  
         rescue Exception => e
           @Log.info "Error when getting nodeInventory from kube API. Exception: #{e.class} Message: #{e.message} "
-          Test_registry.instance.applicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
+          @ApplicationInsightsUtility.sendExceptionTelemetry(e.backtrace)
         end
         if !nodeInventory.nil?
-          cpu_capacity_json = Test_registry.instance.kubernetesApiClient.parseNodeLimits(nodeInventory, "capacity", "cpu", "cpuCapacityNanoCores")
+          cpu_capacity_json = @KubernetesAPIClient.parseNodeLimits(nodeInventory, "capacity", "cpu", "cpuCapacityNanoCores")
           if !cpu_capacity_json.nil? 
              metricVal = JSON.parse(cpu_capacity_json[0]["json_Collections"])[0]["Value"]
             if !metricVal.to_s.nil?
@@ -374,7 +378,7 @@ module Fluent::Plugin
           else
             @Log.info "Error getting cpu_capacity"
           end
-          memory_capacity_json = Test_registry.instance.kubernetesApiClient.parseNodeLimits(nodeInventory, "capacity", "memory", "memoryCapacityBytes")
+          memory_capacity_json = @KubernetesAPIClient.parseNodeLimits(nodeInventory, "capacity", "memory", "memoryCapacityBytes")
           if !memory_capacity_json.nil? 
             metricVal = JSON.parse(cpu_capacity_json[0]["json_Collections"])[0]["Value"]          
             if !metricVal.to_s.nil?
@@ -386,7 +390,7 @@ module Fluent::Plugin
           end
         end
       elsif @@controller_type.downcase == "daemonset"
-        capacity_from_kubelet = Test_registry.instance.kubeletUtils.get_node_capacity
+        capacity_from_kubelet = @KubeletUtils.get_node_capacity
 
         # Error handling in case /metrics/cadvsior endpoint fails
         if !capacity_from_kubelet.nil? && capacity_from_kubelet.length > 1
@@ -397,7 +401,7 @@ module Fluent::Plugin
           @Log.error "Error getting capacity_from_kubelet: cpu_capacity and memory_capacity"
         end
 
-        allocatable_from_kubelet = Test_registry.instance.kubeletUtils.get_node_allocatable(@cpu_capacity, @memory_capacity)
+        allocatable_from_kubelet = @KubeletUtils.get_node_allocatable(@cpu_capacity, @memory_capacity)
 
         # Error handling in case /configz endpoint fails
         if !allocatable_from_kubelet.nil? && allocatable_from_kubelet.length > 1

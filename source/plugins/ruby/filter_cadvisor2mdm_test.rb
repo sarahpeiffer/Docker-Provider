@@ -1,3 +1,4 @@
+# TODO: can we get rid of this global flag
 $in_unit_test = true
 
 require "test-unit"
@@ -5,7 +6,6 @@ require 'fluent/test'
 require 'fluent/test/driver/filter'
 require 'fluent/test/helpers'
 require_relative 'filter_cadvisor2mdm.rb'
-require_relative 'test_registry'
 require_relative 'KubernetesApiClient'
 require 'byebug'
 
@@ -23,7 +23,6 @@ class MyInputTest < Test::Unit::TestCase
   
     # A relatively simple test for a helper method
     test "build_metrics_hash" do
-
       instance = create_driver.instance
 
       expected = {"constants::cpu_usage_nano_cores" => true, "constants::memory_working_set_bytes" => true, "constants::memory_rss_bytes"=> true, "constants::pv_used_bytes"=> true}
@@ -32,7 +31,7 @@ class MyInputTest < Test::Unit::TestCase
 
       assert_equal({}, instance.build_metrics_hash(""))
 
-      assert_equal({"foobar" => true}, instance.build_metrics_hash("foobar"))
+      assert_equal({"test_input:.<>" => true}, instance.build_metrics_hash("test_input:.<>"))
 
     end
 
@@ -69,7 +68,7 @@ class MyInputTest < Test::Unit::TestCase
         end
       end
 
-      Test_registry.instance.env = {"CONTROLLER_TYPE" => "ReplicaSet",
+      env = {"CONTROLLER_TYPE" => "ReplicaSet",
                                     "OS_TYPE" => "linux",
                                     "AZMON_ALERT_CONTAINER_CPU_THRESHOLD" => Constants::DEFAULT_MDM_CPU_UTILIZATION_THRESHOLD.to_s,
                                     "AZMON_ALERT_CONTAINER_MEMORY_RSS_THRESHOLD" => Constants::DEFAULT_MDM_MEMORY_RSS_THRESHOLD.to_s,
@@ -79,8 +78,8 @@ class MyInputTest < Test::Unit::TestCase
                                     "AKS_REGION" => "westus2",
                                     "AKS_RESOURCE_ID" => "/subscriptions/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx/resourceGroups/rg/providers/Microsoft.ContainerService/managedClusters/clustername",
                                     "CLOUD_ENVIRONMENT" => "azurepubliccloud"}  # TODO: this is actually set to public in running containers. Figure out how @process_incoming_stream resolves to true
-      Test_registry.instance.applicationInsightsUtility = Ai_utility_stub.new()
-      Test_registry.instance.kubernetesApiClient = KubernetesApiClientMock
+      applicationInsightsUtility = Ai_utility_stub.new()
+      kubernetesApiClient = KubernetesApiClientMock
 
       config = %[
                   metrics_to_collect cpuUsageNanoCores,memoryWorkingSetBytes,pvUsedBytes
@@ -97,7 +96,7 @@ class MyInputTest < Test::Unit::TestCase
 
       d = create_driver(config)
       d.instance.set_hostname("aks-nodepool1-24816391-vmss000000")
-      d.instance.start  # TODO: why doesn't the fluentd test harness do this automatically?
+      d.instance.start(env=env, applicationInsightsUtility=applicationInsightsUtility, kubernetesApiClient=kubernetesApiClient)  # TODO: why doesn't the fluentd test harness do this automatically?
       time = event_time
 
       d.run do
@@ -108,6 +107,7 @@ class MyInputTest < Test::Unit::TestCase
       puts d.filtered_records
 
       assert_equal(0, d.filtered_records.size)
+      assert_equal("expected response"), d.filtered_records)
     end
 
 end

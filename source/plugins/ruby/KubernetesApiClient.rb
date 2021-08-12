@@ -12,8 +12,6 @@ class KubernetesApiClient
   require_relative "oms_common"
   require_relative "constants"
 
-  require_relative "test_registry"
-
   @@ApiVersion = "v1"
   @@ApiVersionApps = "v1"
   @@ApiGroupApps = "apps"
@@ -27,6 +25,8 @@ class KubernetesApiClient
   #@@IsValidRunningNode = nil
   #@@IsLinuxCluster = nil
   @@KubeSystemNamespace = "kube-system"
+
+  # TODO: refactor this so that env can be passed in (For unit tests)
   @os_type = Test_registry.instance.env["OS_TYPE"]
   if !@os_type.nil? && !@os_type.empty? && @os_type.strip.casecmp("windows") == 0
     @LogPath = Constants::WINDOWS_LOG_PATH + "kubernetes_client_log.txt"
