@@ -49,7 +49,7 @@ module Fluent::Plugin
     end
 
     def start(env=ENV, applicationInsightsUtility=ApplicationInsightsUtility, kubernetesApiClient=KubernetesApiClient, kubeletUtils=KubeletUtils)
-      @ENV = env
+      @env = env
       @AplicationInsightsUtility = applicationInsightsUtility
       @KubernetesAPIClient = kubernetesApiClient
       @KubeletUtils = kubeletUtils
@@ -57,13 +57,13 @@ module Fluent::Plugin
       super()
 
       @@isWindows = false
-      @@os_type = @ENV["OS_TYPE"]
+      @@os_type = @env["OS_TYPE"]
       if !@@os_type.nil? && !@@os_type.empty? && @@os_type.strip.casecmp("windows") == 0
         @@isWindows = true
       end
 
       begin
-        @process_incoming_stream = CustomMetricsUtils.check_custom_metrics_availability(env=@ENV)
+        @process_incoming_stream = CustomMetricsUtils.check_custom_metrics_availability(env=@env)
         @metrics_to_collect_hash = build_metrics_hash(@metrics_to_collect)
         @Log.debug "After check_custom_metrics_availability process_incoming_stream #{@process_incoming_stream}"
         @@containerResourceUtilTelemetryTimeTracker = DateTime.now.to_time.to_i
@@ -86,7 +86,7 @@ module Fluent::Plugin
           @containerMemoryLimitHash = {}
           @containerResourceDimensionHash = {}
           @pvUsageHash = {}
-          @@metric_threshold_hash = MdmMetricsGenerator.getContainerResourceUtilizationThresholds
+          @@metric_threshold_hash = MdmMetricsGenerator.getContainerResourceUtilizationThresholds(env=@env)
           @NodeCache = Fluent::Plugin::NodeStatsCache.new()
         end
       rescue => e
@@ -343,7 +343,7 @@ module Fluent::Plugin
     end
 
     def ensure_cpu_memory_capacity_and_allocatable_set
-      @@controller_type = @ENV["CONTROLLER_TYPE"]
+      @@controller_type = @env["CONTROLLER_TYPE"]
 
       if @cpu_capacity != 0.0 && @memory_capacity != 0.0 && @@controller_type.downcase == "replicaset"
         @Log.info "CPU And Memory Capacity are already set and their values are as follows @cpu_capacity : #{@cpu_capacity}, @memory_capacity: #{@memory_capacity}"
