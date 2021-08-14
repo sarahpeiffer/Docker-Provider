@@ -34,7 +34,7 @@ func (m *MockIFluentSocketWriter) EXPECT() *MockIFluentSocketWriterMockRecorder 
 }
 
 // Write mocks base method.
-func (m *MockIFluentSocketWriter) Write(arg0 FluentSocket, arg1 []byte) (int, error) {
+func (m *MockIFluentSocketWriter) Write(arg0 *FluentSocket, arg1 []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Write", arg0, arg1)
 	ret0, _ := ret[0].(int)
@@ -49,7 +49,7 @@ func (mr *MockIFluentSocketWriterMockRecorder) Write(arg0, arg1 interface{}) *go
 }
 
 // WriteAndRead mocks base method.
-func (m *MockIFluentSocketWriter) WriteAndRead(arg0 FluentSocket, arg1 []byte) ([]byte, error) {
+func (m *MockIFluentSocketWriter) WriteAndRead(arg0 *FluentSocket, arg1 []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "WriteAndRead", arg0, arg1)
 	ret0, _ := ret[0].([]byte)
@@ -64,7 +64,7 @@ func (mr *MockIFluentSocketWriterMockRecorder) WriteAndRead(arg0, arg1 interface
 }
 
 // connect mocks base method.
-func (m *MockIFluentSocketWriter) connect(arg0 FluentSocket) error {
+func (m *MockIFluentSocketWriter) connect(arg0 *FluentSocket) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "connect", arg0)
 	ret0, _ := ret[0].(error)
@@ -78,7 +78,7 @@ func (mr *MockIFluentSocketWriterMockRecorder) connect(arg0 interface{}) *gomock
 }
 
 // disConnect mocks base method.
-func (m *MockIFluentSocketWriter) disConnect(arg0 FluentSocket) error {
+func (m *MockIFluentSocketWriter) disConnect(arg0 *FluentSocket) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "disConnect", arg0)
 	ret0, _ := ret[0].(error)
@@ -92,7 +92,7 @@ func (mr *MockIFluentSocketWriterMockRecorder) disConnect(arg0 interface{}) *gom
 }
 
 // read mocks base method.
-func (m *MockIFluentSocketWriter) read(arg0 FluentSocket) ([]byte, error) {
+func (m *MockIFluentSocketWriter) read(arg0 *FluentSocket) ([]byte, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "read", arg0)
 	ret0, _ := ret[0].([]byte)
@@ -107,7 +107,7 @@ func (mr *MockIFluentSocketWriterMockRecorder) read(arg0 interface{}) *gomock.Ca
 }
 
 // writeWithRetries mocks base method.
-func (m *MockIFluentSocketWriter) writeWithRetries(arg0 FluentSocket, arg1 []byte) (int, error) {
+func (m *MockIFluentSocketWriter) writeWithRetries(arg0 *FluentSocket, arg1 []byte) (int, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "writeWithRetries", arg0, arg1)
 	ret0, _ := ret[0].(int)

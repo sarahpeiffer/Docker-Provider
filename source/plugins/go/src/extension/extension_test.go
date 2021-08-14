@@ -1,6 +1,10 @@
 package extension
 
 import (
+	"fmt"
+	"log"
+	"os"
+	reflect "reflect"
 	"testing"
 
 	"github.com/golang/mock/gomock"
@@ -45,12 +49,15 @@ func Test_getDataTypeToStreamIdMapping(t *testing.T) {
 		err          error
 	}
 
+	// This is a pretty useless unit test, but it demonstrates the concept (putting together a real test
+	// would require some large json structs). If getDataTypeToStreamIdMapping() is ever updated, that
+	// would be a good opertunity to add some real test cases.
 	tests := []test_struct{
 		{
 			"basic test",
-			"asdfasdfasdfasdfasdf not valid json",
+			"{}",
 			FluentSocket{},
-			map[string]string{"a": "b"},
+			map[string]string{},
 			nil,
 		},
 	}
@@ -60,25 +67,35 @@ func Test_getDataTypeToStreamIdMapping(t *testing.T) {
 			mockCtrl := gomock.NewController(t)
 			defer mockCtrl.Finish()
 			mock := NewMockIFluentSocketWriter(mockCtrl)
-			sock := FluentSocket{}
-			mock.EXPECT().WriteAndRead(sock, []byte("asdf")).Return([]byte("asdf"), nil).Times(1)
-			mock.WriteAndRead(sock, []byte("asdf"))
+			sock := &FluentSocket{}
+			sock.sockAddress = "/var/run/mdsd/default_fluent.socket"
+			mock.EXPECT().WriteAndRead(sock, gomock.Any()).Return([]byte(tt.mdsdResponse), nil).Times(1)
+			mock.EXPECT().disConnect(sock).Return(nil).Times(1)
 
-			_, err := getDataTypeToStreamIdMapping()
+			// This is where calls to the normal socket writer calls are redirected to the mock.
+			ActualFluentSocketWriter := FluentSocketWriter // save the old struct so that we can put it back later
+			FluentSocketWriter = mock
+
+			logfile, err := os.Create("logFile.txt")
 			if err != nil {
-				t.Errorf("got error")
+				fmt.Println(err.Error())
 			}
-			// if got != tt.isValid {
-			// 	t.Errorf("isValidUrl(%s) = %t, want %t", tt.url, got, tt.isValid)
-			// }
+
+			// use an actual logger here. Using a real logger then cleaning up the log file later is easier than mocking the logger.
+			GetInstance(log.New(logfile, "", 0), "ContainerType")
+			defer os.Remove("logFile.txt")
+
+			got, reterr := getDataTypeToStreamIdMapping()
+			if reterr != nil {
+				t.Errorf("got error")
+				t.Errorf(err.Error())
+			}
+			if !reflect.DeepEqual(got, tt.output) {
+				t.Errorf("getDataTypeToStreamIdMapping() = %v, want %v", got, tt.output)
+			}
+
+			// stop redirecting method calls to the mock
+			FluentSocketWriter = ActualFluentSocketWriter
 		})
 	}
-
-	mockCtrl := gomock.NewController(t)
-	defer mockCtrl.Finish()
-	mock := NewMockIFluentSocketWriter(mockCtrl)
-	sock := FluentSocket{}
-	mock.EXPECT().WriteAndRead(sock, []byte("asdf")).Return([]byte("asdf"), nil).Times(1)
-	mock.WriteAndRead(sock, []byte("asdf"))
-
 }

@@ -62,7 +62,7 @@ func getDataTypeToStreamIdMapping() (map[string]string, error) {
 		return datatypeOutputStreamMap, err
 	}
 
-	fs := FluentSocket{}
+	fs := &FluentSocket{}
 	fs.sockAddress = "/var/run/mdsd/default_fluent.socket"
 	if containerType != "" && strings.Compare(strings.ToLower(containerType), "prometheussidecar") == 0 {
 		fs.sockAddress = fmt.Sprintf("/var/run/mdsd-%s/default_fluent.socket", containerType)
@@ -73,7 +73,7 @@ func getDataTypeToStreamIdMapping() (map[string]string, error) {
 	if err != nil {
 		return datatypeOutputStreamMap, err
 	}
-	response := string(responseBytes)
+	response := string(responseBytes) // TODO: why is this converted to a string then back into a []byte?
 
 	var responseObjet AgentTaggedDataResponse
 	err = json.Unmarshal([]byte(response), &responseObjet)
