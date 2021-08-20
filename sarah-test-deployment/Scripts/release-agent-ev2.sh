@@ -3,11 +3,11 @@
 # Note - This script used in the pipeline as inline script
 
 # These are plain pipeline variable which can be modified anyone in the team
-# AGENT_RELEASE=cidev
-# AGENT_IMAGE_TAG_SUFFIX=07222021
+# AGENT_RELEASE=ciev2
+# AGENT_IMAGE_TAG_SUFFIX=08202021
 
 #Name of the ACR for ciprod & cidev images
-ACR_NAME= containerinsightsprod.azurecr.io
+ACR_NAME=containerinsightsprod.azurecr.io
 AGENT_IMAGE_FULL_PATH=${ACR_NAME}/public/azuremonitor/containerinsights/${AGENT_RELEASE}:${AGENT_RELEASE}${AGENT_IMAGE_TAG_SUFFIX}
 AGENT_IMAGE_TAR_FILE_NAME=agentimage.tar.gz
 
@@ -39,9 +39,9 @@ else
 fi
 # IMAGE_ID=$(podman images $IMAGE_NAME | awk '{print $3 }' | tail -1)
 # echo "Image Id is : ${IMAGE_ID}"
-prefix="Loadedimage:"
+prefix="Loadedimage(s):"
 IMAGE_NAME=$(echo $IMAGE_NAME | tr -d '"' | tr -d "[:space:]")
-IMAGE_NAME=${IMAGE_NAME/#$prefix}
+IMAGE_NAME=${IMAGE_NAME#$prefix}
 echo "*** trimmed image name-:${IMAGE_NAME}"
 echo "tagging the image $IMAGE_NAME as ${AGENT_IMAGE_FULL_PATH}"
 # podman tag $IMAGE_NAME ${AGENT_IMAGE_FULL_PATH}
