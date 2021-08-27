@@ -1,6 +1,6 @@
 {
-    "$schema": "http://schema.express.azure.com/schemas/2015-01-01-alpha/ServiceModel.json",
-    "ContentVersion": "0.0.0.1",
+  "$schema": "https://ev2schema.azure.net/schemas/2020-01-01/serviceModel.json",
+  "contentVersion": "1.0.0.2",
     "ServiceMetadata": {
       "ServiceGroup": "ContainerInsightsExtension",
       "Environment": "Prod"
@@ -30,18 +30,28 @@
     ],
     "ServiceResourceGroups": [     
       {
-        "AzureResourceGroupName": "ContainerInsightsExtension-Canary-Release",
+        "AzureResourceGroupName": "ContainerInsightsExtension-Global-Release",
         "Location": "eastus2",
         "InstanceOf": "ARC-Extension-ServiceResourceGroupDefinition",
         "AzureSubscriptionId": "5fab7b6f-6150-42fe-89e1-0f07a0a9a46f",  
         "ScopeTags": [
           {
-            "Name": "Canary"
+            "Name": "Global"
           }
         ],     
         "ServiceResources": [
           {
-            "Name": "PushChartToACR-Canary",
+            "Name": "CreateInfrastructureResource",
+            "InstanceOf": "Infrastructure-SRDef",
+            "ArmParametersPath": "//TODO"
+          },
+          {
+            "Name": "PushLinuxAgent",
+            "InstanceOf": "ShellExtension",
+            "RolloutParametersPath": "Parameters\\ContainerInsightsExtension.Parameters.json"
+          },
+          {
+            "Name": "PushWindowsAgent",
             "InstanceOf": "ShellExtension",
             "RolloutParametersPath": "Parameters\\ContainerInsightsExtension.Parameters.json"
           }

@@ -3,19 +3,27 @@
     "contentVersion": "0.0.0.1",
     "scopeBindings": [       
         {
-            "scopeTagName": "Canary",
+            "scopeTagName": "Global",
             "bindings": [
                 {
                     "find": "__RELEASE_STAGE__",
                     "replaceWith": "Canary"
-                },               
+                },
+                {
+                    "find": "__SUBSCRIPTION_ID__",
+                    "replaceWith": "$azureSubscriptionId()"
+                  },
+                  {
+                    "find": "__RESOURCE_GROUP__",
+                    "replaceWith": "$azureResourceGroup()"
+                  },             
                 {
                     "find": "__ACR_NAME__",
                     "replaceWith": "$(ACRName)"
                 },            
                 {
-                    "find": "__CHART_VERSION__",
-                    "replaceWith": "$(ChartVersion)"
+                    "find": "__AGENT_VERSION__",
+                    "replaceWith": "$(AgentVersion)"
                 }               
             ]
         }                                                                                                                                                

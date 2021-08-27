@@ -22,7 +22,3 @@ install_podman() {
 }
 
 install_podman
-
-
-	    #sudo apt-get install software-properties-common -y
-	    #sudo add-apt-repository -y ppa:projectatomic/ppa

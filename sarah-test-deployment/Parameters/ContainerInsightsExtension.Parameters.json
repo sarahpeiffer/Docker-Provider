@@ -11,7 +11,7 @@
   ],
   "shellExtensions": [
     {
-      "name": "PushChartToACR",
+      "name": "PushAgentToACR",
       "type": "ShellExtensionType",
       "properties": {
         "maxexecutiontime": "PT1H"
@@ -24,7 +24,7 @@
       "launch": {
         "command": [
           "/bin/bash",
-          "pushChartToAcr.sh"
+          "pushAgentToAcr.sh"
         ],
         "environmentVariables": [
           {
@@ -42,6 +42,10 @@
             "asSecureValue": "true"
           },
           {
+            "name": "DESTINATION_FILE_NAME",
+            "value": "agentimage.tar.gz"
+          },
+          {
             "name": "ACR_APP_SECRET",
             "reference": {
               "provider": "AzureKeyVault",
@@ -56,10 +60,16 @@
             "value": "__ACR_NAME__"
           },
           {
-            "name": "CHART_VERSION",
-            "value": "__CHART_VERSION__"
+            "name": "AGENT_VERSION",
+            "value": "__AGENT_VERSION__"
           }
-        ]
+        ], 
+        "identity": {
+          "type": "userAssigned",
+          "userAssignedIdentities": [
+            "/subscriptions/__SUBSCRIPTION_ID__/resourcegroups/__RESOURCE_GROUP__/providers/Microsoft.ManagedIdentity/userAssignedIdentities/<//TODO>"
+          ]
+        }
       }
     }
   ]
