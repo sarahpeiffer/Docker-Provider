@@ -43,7 +43,7 @@
           {
             "Name": "CreateInfrastructureResource",
             "InstanceOf": "Infrastructure-SRDef",
-            "ArmParametersPath": "//TODO"
+            "ArmParametersPath": "Parameters\\Infrastructure.Parameters.json"
           },
           {
             "Name": "PushLinuxAgent",
