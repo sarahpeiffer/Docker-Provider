@@ -6,7 +6,7 @@
         "value" : " //MANAGED IDENTITY NAME"
       },
       "RegistryName" : {
-        "value" : " //ACR NAME"
+        "value" : "containerinsightsprod"
       }
     }
   }
