@@ -7,7 +7,7 @@
     },
     "ServiceResourceGroupDefinitions": [
       {
-        "Name": "ARC-Extension-ServiceResourceGroupDefinition",
+        "Name": "CI-Extension-ServiceResourceGroupDefinition",
         "ServiceResourceDefinitions": [
           {
             "Name": "ShellExtension",
@@ -32,7 +32,7 @@
       {
         "AzureResourceGroupName": "ContainerInsightsExtension-Global-Release",
         "Location": "eastus2",
-        "InstanceOf": "ARC-Extension-ServiceResourceGroupDefinition",
+        "InstanceOf": "CI-Extension-ServiceResourceGroupDefinition",
         "AzureSubscriptionId": "5fab7b6f-6150-42fe-89e1-0f07a0a9a46f",  
         "ScopeTags": [
           {
@@ -41,19 +41,14 @@
         ],     
         "ServiceResources": [
           {
-            "Name": "CreateInfrastructureResource",
-            "InstanceOf": "Infrastructure-SRDef",
-            "ArmParametersPath": "Parameters\\Infrastructure.Parameters.json"
-          },
-          {
             "Name": "PushLinuxAgent",
             "InstanceOf": "ShellExtension",
-            "RolloutParametersPath": "Parameters\\ContainerInsightsExtension.Parameters.json"
+            "RolloutParametersPath": "Parameters\\ContainerInsightsLinux.Parameters.json"
           },
           {
             "Name": "PushWindowsAgent",
             "InstanceOf": "ShellExtension",
-            "RolloutParametersPath": "Parameters\\ContainerInsightsExtension.Parameters.json"
+            "RolloutParametersPath": "Parameters\\ContainerInsightsWindows.Parameters.json"
           }
         ]
       }                                                                                                 

@@ -19,24 +19,18 @@
   },
   "OrchestratedSteps": [
     {
-      "Name": "CreateInfrastructure",
-      "TargetType": "ServiceResource",
-      "TargetName": "CreateInfrastructureResource",
-      "Actions": ["Deploy"]
-    },
-    {
       "name": "PushLinuxAgent",
       "targetType": "ServiceResource",
       "targetName": "PushLinuxAgent",
       "actions": [ "Shell/PushAgentToACR" ],
-      "dependsOn": [ "CreateInfrastructure" ]
+      "dependsOn": [ ]
     },
     {
       "name": "PushWindowsAgent",
       "targetType": "ServiceResource",
       "targetName": "PushWindowsAgent",
       "actions": [ "Shell/PushAgentToACR" ],
-      "dependsOn": [ "CreateInfrastructure" ]
+      "dependsOn": [ ]
     }
   ]
 }

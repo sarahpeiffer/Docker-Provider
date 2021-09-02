@@ -4,26 +4,22 @@
     "scopeBindings": [       
         {
             "scopeTagName": "Global",
-            "bindings": [
-                {
-                    "find": "__RELEASE_STAGE__",
-                    "replaceWith": "Canary"
-                },
-                {
-                    "find": "__SUBSCRIPTION_ID__",
-                    "replaceWith": "$azureSubscriptionId()"
-                  },
-                  {
-                    "find": "__RESOURCE_GROUP__",
-                    "replaceWith": "$azureResourceGroup()"
-                  },             
+            "bindings": [        
                 {
                     "find": "__ACR_NAME__",
                     "replaceWith": "$(ACRName)"
                 },            
                 {
-                    "find": "__AGENT_VERSION__",
-                    "replaceWith": "$(AgentVersion)"
+                    "find": "__AGENT_RELEASE__",
+                    "replaceWith": "$(AGENT_RELEASE)"
+                }, 
+                {
+                    "find": "__AGENT_IMAGE_TAG_SUFFIX__",
+                    "replaceWith": "$(AGENT_IMAGE_TAG_SUFFIX)"
+                }, 
+                {
+                    "find": "__MANAGED_IDENTITY__",
+                    "replaceWith": "$(MANAGED_IDENTITY)"
                 }               
             ]
         }                                                                                                                                                
